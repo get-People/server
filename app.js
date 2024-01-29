@@ -1,14 +1,15 @@
-import express from 'express'
-import users from './routes/userRouter.js'
-import customers from "./routes/postsRouter.js";
+import express from "express";
+import users from "./routes/userRouter.js";
+import posts from "./routes/postsRouter.js";
+import cors from 'cors'
 
 const app = express();
-const port = 7770
+const port = 7770;
 
-
-
-app.use("/api/user", users);
-app.use("/api/bank", customers);
+app.use(cors())
+app.use(express.json())
+app.use("/api/users", users);
+app.use("/api/posts", posts);
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
