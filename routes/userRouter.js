@@ -1,4 +1,5 @@
 import { Router } from "express";
+import purify from "../utils/sanitize";
 const router = Router();
 
 let users = [
@@ -16,6 +17,7 @@ router.post("/addUser", (req, res) => {
   res.status(201).send({ message: "user added successfully" });
 });
 router.put("/updateUser/:id", (req, res) => {
+  req.query.id = purify.sanitize(req.query.id);
   const { id } = req?.params;
   const { name } = req?.body;
 
