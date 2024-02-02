@@ -1,12 +1,8 @@
 import { Router } from "express";
-import purify from "../utils/sanitize";
+import purify from "../utils/sanitize.js";
 const router = Router();
 
-let users = [
-  { name: "dan", id: 1 },
-  { name: "ben", id: 2 },
-  { name: "jim", id: 3 },
-];
+let users = [];
 router.get("/getAllUsers", (req, res) => {
   res.status(200).send(users);
 });
@@ -16,10 +12,11 @@ router.post("/addUser", (req, res) => {
   users.push({ name, id });
   res.status(201).send({ message: "user added successfully" });
 });
-router.put("/updateUser/:id", (req, res) => {
-  req.query.id = purify.sanitize(req.query.id);
-  const { id } = req?.params;
-  const { name } = req?.body;
+router.put("/updateUser/", (req, res) => {
+  console.log(req.query);
+  req.query = purify.sanitize(req.query);
+  const { id, name } = req?.query;
+ 
 
   const userToUpdate = users.find((user) => user.id === parseInt(id));
   if (!userToUpdate) {
@@ -30,11 +27,22 @@ router.put("/updateUser/:id", (req, res) => {
 });
 
 router.delete("/delUser", (req, res) => {
-  const id = req.params;
-  users = users.filter(user => user.id != parseInt(id));
+  const { id } = req.query;
 
-  res.status(200).send({ message: "user deleted successfully" });
- 
+  // Validate if 'id' is provided
+  if (!id) {
+    return res.status(400).send({ message: "Missing 'id' parameter" });
+  }
+  const userId = parseInt(id);
+
+  const deletedUserIndex = users.findIndex((user) => user.id === userId);
+  if (deletedUserIndex === -1) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  users.splice(deletedUserIndex, 1);
+
+  res.status(200).send({ message: "User deleted successfully" });
 });
+
 
 export default router;

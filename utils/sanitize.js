@@ -1,5 +1,5 @@
-const createDOMPurify = require("dompurify");
-const { JSDOM } = require("jsdom");
+import createDOMPurify from 'dompurify';
+import { JSDOM } from "jsdom";
 
 const window = new JSDOM("").window;
 const purify = createDOMPurify(window);
