@@ -13,15 +13,16 @@ router.get("/getAllPosts", (req, res) => {
 
 router.get("/getPostByID/:id", (req, res) => {
   const { id } = req.params;
-  const post = posts.find((post) => post.id == id);
+  const postID = parseInt(id)
+  const post = posts.find((post) => post.id == postID);
   res.status(200).send(post);
 });
 
 router.post("/updatePostByID/:id", (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
-
-  const postIndex = posts.findIndex((post) => post.id == id);
+  const postID = parseInt(id)
+  const postIndex = posts.findIndex((post) => post.id == postID);
   if (postIndex !== -1) {
     posts[postIndex].title = title;
     res.status(200).send(posts[postIndex]);
@@ -47,9 +48,8 @@ router.post("/filteredPosts", (req, res) => {
 
 router.put("/addPost", (req, res) => {
   const { name, title } = req.body;
-  const post = { name, title };
+  const post = { name, title , id: posts.length + 1};
   if (post) {
-    post.id = posts.length + 1;
     console.log(post);
     posts.push(post);
     res.status(201).send(post);
@@ -60,7 +60,8 @@ router.put("/addPost", (req, res) => {
 
 router.delete("/deletePostByID/:id", (req, res) => {
   const { id } = req.params;
-  posts = posts.filter((post) => post.id != id);
+  const postID = parseInt(id) 
+  posts = posts.filter((post) => post.id != postID);
   res.sendStatus(200);
 });
 
