@@ -82,7 +82,7 @@ router.put("/updatePost/:id", async (req: Request, res: Response) => {
     res.status(500).send("something went wrong when updating post");
   }
 });
-router.delete("/:id",async (req: Request, res: Response) => { 
+router.delete("/deletePost/:id",async (req: Request, res: Response) => { 
   try {
     const post = await Post.findByIdAndDelete(req.params.id)
     if (!post) return res.status(400).send("the post with the given id was not found");
