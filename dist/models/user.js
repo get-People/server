@@ -4,8 +4,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const addressSchema = new mongoose_1.default.Schema({
+    country_id: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'country',
+        required: true,
+    },
+    city_id: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'city',
+        required: true,
+    },
+    street_id: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'street',
+        required: true,
+    },
+}, { _id: false });
 const userSchema = new mongoose_1.default.Schema({
-    name: {
+    firstName: {
+        type: String,
+        required: true,
+        minLength: 3,
+        maxLength: 30,
+        trim: true,
+    },
+    lastName: {
         type: String,
         required: true,
         minLength: 3,
@@ -19,7 +43,8 @@ const userSchema = new mongoose_1.default.Schema({
         maxLength: 35,
         trim: true,
         lowercase: true
-    }
+    },
+    address: addressSchema,
 });
 const User = mongoose_1.default.model('user', userSchema);
 exports.default = User;

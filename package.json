@@ -22,7 +22,7 @@
     "prestart": "npm run build",
     "start": "node dist/app.js",
     "predev": "npm run build",
-    "dev": "concurrently \"npx tsc -w\" \"nodemon dist/app.js\" "
+    "dev": "concurrently \"npx tsc -w\" \"nodemon --env-file .env dist/app.js\""
   },
   "keywords": [],
   "author": "",
