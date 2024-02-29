@@ -67,15 +67,16 @@ router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).send({ message: "error when trying to get user" });
     }
 }));
-router.put("/updateUser:/id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/updateUser/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (typeof req.params.id === 'string') {
-            req.params.id = sanitize_js_1.default.sanitize(req.params.id);
+        let id = req.params.id;
+        if (typeof id === 'string') {
+            id = sanitize_js_1.default.sanitize(id);
         }
-        const { error } = userValidator_js_1.updateUserValidator.validate(req.params.id);
+        const { error } = userValidator_js_1.updateUserValidator.validate(req.body);
         if (error)
             return res.status(400).send(error.details[0].message);
-        const updatedUser = yield user_js_1.default.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedUser = yield user_js_1.default.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedUser)
             return res.status(404).send("something went wrong with the updating");
         res.status(200).send(updatedUser);

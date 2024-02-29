@@ -13,9 +13,17 @@ exports.createUserValidator = joi_1.default.object({
         country_id: joi_1.default.string().required(),
         city_id: joi_1.default.string().required(),
         street_id: joi_1.default.string().required(),
-    }).required()
+    }).required(),
+    age: joi_1.default.number().min(18).max(120).required(),
 });
 exports.updateUserValidator = joi_1.default.object({
-    name: joi_1.default.string().min(3).max(30).optional(),
-    email: joi_1.default.string().min(15).max(30).email().optional()
+    firstName: joi_1.default.string().min(3).max(30).optional(),
+    lastName: joi_1.default.string().min(3).max(30).optional(),
+    email: joi_1.default.string().min(15).max(30).email().optional(),
+    address: joi_1.default.object({
+        country_id: joi_1.default.string().required(),
+        city_id: joi_1.default.string().required(),
+        street_id: joi_1.default.string().required(),
+    }).optional(),
+    age: joi_1.default.number().min(18).max(120).optional(),
 });

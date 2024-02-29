@@ -55,15 +55,16 @@ router.post("/specificUser", async (req, res) => {
   }
 })
 
-router.put("/updateUser:/id", async(req: Request, res: Response) => {
+router.put("/updateUser/:id", async(req: Request, res: Response) => {
   try {
-    if (typeof req.params.id === 'string') {
-      req.params.id = purify.sanitize(req.params.id)
+    let id = req.params.id;
+    if (typeof id === 'string') {
+      id = purify.sanitize(id)
     }
-    const { error } = updateUserValidator.validate(req.params.id)
+    const { error } = updateUserValidator.validate(req.body)
     if(error) return res.status(400).send(error.details[0].message) 
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      id,
       req.body,
       {new: true},
     )
@@ -74,6 +75,7 @@ router.put("/updateUser:/id", async(req: Request, res: Response) => {
     res.status(500).send({ errorMessage: "update fail" })
   }
 });
+
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id)

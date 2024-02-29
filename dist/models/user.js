@@ -45,6 +45,12 @@ const userSchema = new mongoose_1.default.Schema({
         lowercase: true
     },
     address: addressSchema,
+    age: {
+        type: Number,
+        min: 18,
+        max: 120,
+        required: true,
+    }
 });
 const User = mongoose_1.default.model('user', userSchema);
 exports.default = User;
