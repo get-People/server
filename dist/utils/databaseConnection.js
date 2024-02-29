@@ -5,10 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectToDatabase = () => {
-    const mongoURL = 'mongodb+srv://israelmark:r0zWjecE1Ejkyt97@cluster0.iizwmp1.mongodb.net/?retryWrites=true&w=majority';
-    mongoose_1.default
-        .connect(mongoURL)
-        .then(() => console.log("connected to mongoDB"))
-        .catch((err) => console.error("error connecting to mongoDB", err));
+    if (!process.env.MONGODB_URL) {
+        throw new Error("MONGODB_URL must be defined");
+    }
+    mongoose_1.default.connect(process.env.MONGODB_URL)
+        .then(() => console.log("Connected to MongoDB"))
+        .catch((err) => console.error("Error connecting to MongoDB", err));
 };
 exports.default = connectToDatabase;

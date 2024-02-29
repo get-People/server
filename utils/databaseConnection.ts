@@ -1,11 +1,14 @@
 import mongoose from "mongoose"; 
 
 const connectToDatabase = () => {
-  const mongoURL = 'mongodb+srv://israelmark:r0zWjecE1Ejkyt97@cluster0.iizwmp1.mongodb.net/?retryWrites=true&w=majority';
-mongoose
-  .connect(mongoURL)
-  .then(() => console.log("connected to mongoDB"))
-  .catch((err) => console.error("error connecting to mongoDB", err));
-}
+  
+  if (!process.env.MONGODB_URL) {
+    throw new Error("MONGODB_URL must be defined");
+  }
+
+  mongoose.connect(process.env.MONGODB_URL)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("Error connecting to MongoDB", err));
+};
 
 export default connectToDatabase
