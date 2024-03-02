@@ -18,9 +18,9 @@
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "build": " rimraf dist && npx tsc",
+    "build": "concurrently \"rimraf dist\" \"npx tsc\"",
     "prestart": "npm run build",
-    "start": "node dist/app.js",
+    "start": "node --env-file .env dist/app.js",
     "predev": "npm run build",
     "dev": "concurrently \"npx tsc -w\" \"nodemon --env-file .env dist/app.js\""
   },
