@@ -2,33 +2,61 @@ import { Router , Request , Response } from "express";
 const router = Router();
 import User from '../models/user.js'
 import purify from "../utils/sanitize.js";
-import { createUserValidator, updateUserValidator } from "../validation/userValidator.js";
+import {updateUserValidator } from "../validation/userValidator.js";
+import axios from "axios";
+import https from "https"
 
 
-router.post("/createUser", async(req, res) => {
+
+router.get("/check", async (req, res) => {
   try {
-    Object.keys(req.body).forEach(key => {
-      if ((typeof req.body[key] === 'object')) {
-        console.log(req.body[key])
-        Object.keys(req.body[key]).forEach(item => {
-          item = purify.sanitize(item)
-        })
-      }
-      else {
-        req.body[key] = purify.sanitize(req.body[key])
-      }
-    })
-
-    const { error } = createUserValidator.validate(req.body)
-    if (error) return res.status(400).send(error.details[0].message);
-   
-    const newUser = await User.create(req.body)
-    res.status(200).send(newUser)
-  } catch (error) {
+    const response = await axios.get(`https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/check`, {
+  httpsAgent: new https.Agent({
+    rejectUnauthorized: false
+  })
+});
+    res.status(200).send(response.data);
+  }
+  catch (error) { 
     console.error(error);
-    res.status(500).send({errorMessage: "create fail"})
+    res.status(500).send({ errorMessage: "Failed to check authentication server" });
+  }
+})
+router.post("/register", async(req:Request, res:Response) => {
+  try {
+   const response = await axios.post(
+  `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/register`,
+  req.body,
+  {
+    httpsAgent: new https.Agent({
+      rejectUnauthorized: false
+    })
+  }
+);
+    res.status(200).send(response.data);  
+  } catch (error:any) {
+    if (error.response) {
+      res.status(error.response.status).send(error.response.data);
+    } else {
+      res.status(500).send({ errorMessage: "Failed to register user on authentication server" });
+    }
   }
 });
+router.post("/login", async (req: Request, res: Response) => {
+  try{
+  const response = await axios.post(`https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/login`, req.body, {
+    httpsAgent: new https.Agent({
+      rejectUnauthorized: false
+    })
+  })
+  res.status(200).send(response.data);
+}
+  catch(error){
+    console.error(error)
+    res.status(500).send({ message: "login fail" })
+    }
+})
+
 router.get("/getAllUsers", async (req: Request, res: Response) => {
   try {
     const users = await User.find({})

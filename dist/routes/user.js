@@ -17,28 +17,53 @@ const router = (0, express_1.Router)();
 const user_js_1 = __importDefault(require("../models/user.js"));
 const sanitize_js_1 = __importDefault(require("../utils/sanitize.js"));
 const userValidator_js_1 = require("../validation/userValidator.js");
-router.post("/createUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const axios_1 = __importDefault(require("axios"));
+const https_1 = __importDefault(require("https"));
+router.get("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        Object.keys(req.body).forEach(key => {
-            if ((typeof req.body[key] === 'object')) {
-                console.log(req.body[key]);
-                Object.keys(req.body[key]).forEach(item => {
-                    item = sanitize_js_1.default.sanitize(item);
-                });
-            }
-            else {
-                req.body[key] = sanitize_js_1.default.sanitize(req.body[key]);
-            }
+        const response = yield axios_1.default.get(`https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/check`, {
+            httpsAgent: new https_1.default.Agent({
+                rejectUnauthorized: false
+            })
         });
-        const { error } = userValidator_js_1.createUserValidator.validate(req.body);
-        if (error)
-            return res.status(400).send(error.details[0].message);
-        const newUser = yield user_js_1.default.create(req.body);
-        res.status(200).send(newUser);
+        res.status(200).send(response.data);
     }
     catch (error) {
         console.error(error);
-        res.status(500).send({ errorMessage: "create fail" });
+        res.status(500).send({ errorMessage: "Failed to check authentication server" });
+    }
+}));
+router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield axios_1.default.post(`https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/register`, req.body, {
+            httpsAgent: new https_1.default.Agent({
+                rejectUnauthorized: false
+            })
+        });
+        res.status(200).send(response.data);
+    }
+    catch (error) {
+        console.error(error);
+        if (error.response) {
+            res.status(error.response.status).send(error.response.data);
+        }
+        else {
+            res.status(500).send({ errorMessage: "Failed to register user on authentication server" });
+        }
+    }
+}));
+router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield axios_1.default.post(`https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}/login`, req.body, {
+            httpsAgent: new https_1.default.Agent({
+                rejectUnauthorized: false
+            })
+        });
+        res.status(200).send(response.data);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "login fail" });
     }
 }));
 router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
