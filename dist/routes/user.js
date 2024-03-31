@@ -17,28 +17,56 @@ const router = (0, express_1.Router)();
 const user_js_1 = __importDefault(require("../models/user.js"));
 const sanitize_js_1 = __importDefault(require("../utils/sanitize.js"));
 const userValidator_js_1 = require("../validation/userValidator.js");
-router.post("/createUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const axios_1 = __importDefault(require("axios"));
+const https_1 = __importDefault(require("https"));
+const axiosInstance = axios_1.default.create({
+    baseURL: `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}`,
+    httpsAgent: new https_1.default.Agent({
+        rejectUnauthorized: false
+    }),
+    withCredentials: true
+});
+router.get("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        Object.keys(req.body).forEach(key => {
-            if ((typeof req.body[key] === 'object')) {
-                console.log(req.body[key]);
-                Object.keys(req.body[key]).forEach(item => {
-                    item = sanitize_js_1.default.sanitize(item);
-                });
-            }
-            else {
-                req.body[key] = sanitize_js_1.default.sanitize(req.body[key]);
-            }
-        });
-        const { error } = userValidator_js_1.createUserValidator.validate(req.body);
-        if (error)
-            return res.status(400).send(error.details[0].message);
-        const newUser = yield user_js_1.default.create(req.body);
-        res.status(200).send(newUser);
+        const response = yield axiosInstance.get('/check');
+        res.status(200).send(response.data);
     }
     catch (error) {
         console.error(error);
-        res.status(500).send({ errorMessage: "create fail" });
+        res.status(500).send({ errorMessage: "Failed to check authentication server" });
+    }
+}));
+router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield axiosInstance.post('/register', req.body);
+        const cookieHeader = response.headers['set-cookie'];
+        if (cookieHeader) {
+            res.set('Set-Cookie', cookieHeader);
+        }
+        res.status(201).send(response.data);
+    }
+    catch (error) {
+        if (error.response) {
+            res.status(error.response.status).send(error.response.data);
+        }
+        else {
+            res.status(500).send({ errorMessage: "Failed to register user on authentication server" });
+        }
+    }
+}));
+router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield axiosInstance.post('/login', req.body);
+        console.log(response);
+        const cookieHeader = response.headers['set-cookie'];
+        if (cookieHeader) {
+            res.set('Set-Cookie', cookieHeader);
+        }
+        res.status(200).send(response.data);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send({ message: error.response.data.message });
     }
 }));
 router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -57,9 +85,7 @@ router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, fun
         const user = yield user_js_1.default.findOne({
             "firstName": firstName,
             "lastName": lastName
-        }).populate('address.country_id')
-            .populate('address.city_id')
-            .populate('address.street_id');
+        });
         res.status(200).send(user);
     }
     catch (error) {
@@ -67,16 +93,16 @@ router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).send({ message: "error when trying to get user" });
     }
 }));
-router.put("/updateUser/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/updateUser/:email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let id = req.params.id;
-        if (typeof id === 'string') {
-            id = sanitize_js_1.default.sanitize(id);
+        let email = req.params.email;
+        if (typeof email === 'string') {
+            email = sanitize_js_1.default.sanitize(email);
         }
         const { error } = userValidator_js_1.updateUserValidator.validate(req.body);
         if (error)
             return res.status(400).send(error.details[0].message);
-        const updatedUser = yield user_js_1.default.findByIdAndUpdate(id, req.body, { new: true });
+        const updatedUser = yield user_js_1.default.findOneAndUpdate({ email }, req.body);
         if (!updatedUser)
             return res.status(404).send("something went wrong with the updating");
         res.status(200).send(updatedUser);

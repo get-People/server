@@ -9,21 +9,13 @@ exports.createUserValidator = joi_1.default.object({
     firstName: joi_1.default.string().min(3).max(30).required(),
     lastName: joi_1.default.string().min(3).max(30).required(),
     email: joi_1.default.string().min(15).max(30).email().required(),
-    address: joi_1.default.object({
-        country_id: joi_1.default.string().required(),
-        city_id: joi_1.default.string().required(),
-        street_id: joi_1.default.string().required(),
-    }).required(),
-    age: joi_1.default.number().min(18).max(120).required(),
+    password: joi_1.default.alternatives().try(joi_1.default.string().min(4), joi_1.default.number()).required(),
+    isAdmin: joi_1.default.boolean().required()
 });
 exports.updateUserValidator = joi_1.default.object({
     firstName: joi_1.default.string().min(3).max(30).optional(),
     lastName: joi_1.default.string().min(3).max(30).optional(),
     email: joi_1.default.string().min(15).max(30).email().optional(),
-    address: joi_1.default.object({
-        country_id: joi_1.default.string().required(),
-        city_id: joi_1.default.string().required(),
-        street_id: joi_1.default.string().required(),
-    }).optional(),
-    age: joi_1.default.number().min(18).max(120).optional(),
+    password: joi_1.default.alternatives().try(joi_1.default.string().min(4), joi_1.default.number()).optional(),
+    isAdmin: joi_1.default.boolean().optional()
 });
