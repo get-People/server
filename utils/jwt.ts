@@ -17,3 +17,8 @@ export const verifyToken = (req: Request, res: Response, next: () => any) => {
     }
     return res.status(401).send({ message: "Unauthorized" });
 }
+
+export const isAdmin = (req: Request, res: Response, next: () => any) => {
+    if (req.body.user.isAdmin) return next();
+    return res.status(401).send({ message: "forbidden" });
+}

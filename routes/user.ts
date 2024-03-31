@@ -5,7 +5,7 @@ import purify from "../utils/sanitize.js";
 import {updateUserValidator } from "../validation/userValidator.js";
 import axios from "axios";
 import https from "https"
-import { verifyToken } from "../utils/jwt.js";
+import { isAdmin, verifyToken } from "../utils/jwt.js";
 
 
 const axiosInstance = axios.create({
@@ -48,7 +48,7 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 })
 
-router.get("/getAllUsers",verifyToken, async (req: Request, res: Response) => {
+router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Response) => {
   try {
     const users = await User.find({})
     res.status(200).send(users)
@@ -76,21 +76,28 @@ router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) 
   try {
     let email = req.params.email;
     if (typeof email === 'string') {
-      email = purify.sanitize(email)
+      email = purify.sanitize(email) 
     }
     const { error } = updateUserValidator.validate(req.body)
-    if(error) return res.status(400).send(error.details[0].message) 
+    if (error) return res.status(400).send(error.details[0].message)
+    
+    const { isAdmin, ...userData } = req.body; 
     const updatedUser = await User.findOneAndUpdate(
       { email },
-      req.body,
+      userData,
+     { new: true }
     )
     if (!updatedUser) return res.status(404).send("something went wrong with the updating");
+    if (typeof isAdmin === 'boolean') {
+      return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
+    }
     res.status(200).send(updatedUser);
   } catch (error) {
     console.error(error)
     res.status(500).send({ errorMessage: "update fail" })
   }
 });
+
 
 router.delete("/:id", verifyToken,async (req: Request, res: Response) => {
   try {
