@@ -21,7 +21,7 @@ const credentials = {
     key: privateKey,
     cert: certificate,
 };
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
 app.use("/api/users", user_1.default);
 app.use("/api/posts", post_1.default);

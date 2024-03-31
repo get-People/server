@@ -1,25 +1,4 @@
 import mongoose from 'mongoose'
-import Country from './country'
-import City from './city'
-import Street from './street'
-
-const addressSchema = new mongoose.Schema({
-    country_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'country',
-        required: true,
-    },
-    city_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'city',
-        required: true,
-    },
-    street_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'street',
-        required: true,
-    },
-},{ _id: false })
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -44,12 +23,10 @@ const userSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
-    address: addressSchema,
-    age: {
-        type: Number,
-        min: 18,
-        max: 120,
+     password: {
+        type: String,
         required: true,
+        minLength: 4,
     }
 })
 

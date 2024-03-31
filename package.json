@@ -23,7 +23,7 @@
     "prestart": "npm run build",
     "start": "node --env-file .env dist/app.js",
     "predev": "npm run build",
-   "dev": "concurrently \"npx tsc -w\" \"node --watch --env-file .env dist/app.js\""
+    "dev": "concurrently \"npx tsc -w\" \"node --watch --env-file .env dist/app.js\""
   },
   "keywords": [],
   "author": "",
