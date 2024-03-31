@@ -5,6 +5,7 @@ import purify from "../utils/sanitize.js";
 import {updateUserValidator } from "../validation/userValidator.js";
 import axios from "axios";
 import https from "https"
+import { verifyToken } from "../utils/jwt.js";
 
 
 const axiosInstance = axios.create({
@@ -14,18 +15,6 @@ const axiosInstance = axios.create({
       }),
   withCredentials: true 
 })
-
-
-router.get("/check", async (req, res) => {
-  try {
-    const response = await axiosInstance.get('/check')
-    res.status(200).send(response.data);
-  }
-  catch (error) {
-    console.error(error);
-    res.status(500).send({ errorMessage: "Failed to check authentication server" });
-  }
-});
 
 router.post("/register", async(req:Request, res:Response) => {
   try {
@@ -59,7 +48,7 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 })
 
-router.get("/getAllUsers", async (req: Request, res: Response) => {
+router.get("/getAllUsers",verifyToken, async (req: Request, res: Response) => {
   try {
     const users = await User.find({})
     res.status(200).send(users)
@@ -68,7 +57,7 @@ router.get("/getAllUsers", async (req: Request, res: Response) => {
     res.status(500).send({message: "something error when trying to get users"})
   }
 });
-router.post("/specificUser", async (req, res) => {
+router.post("/specificUser",verifyToken, async (req, res) => {
   try {
     const { firstName, lastName } = req.body;
     const user = await User.findOne({
@@ -83,7 +72,7 @@ router.post("/specificUser", async (req, res) => {
   }
 })
 
-router.put("/updateUser/:email", async(req: Request, res: Response) => {
+router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) => {
   try {
     let email = req.params.email;
     if (typeof email === 'string') {
@@ -103,7 +92,7 @@ router.put("/updateUser/:email", async(req: Request, res: Response) => {
   }
 });
 
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", verifyToken,async (req: Request, res: Response) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id)
       if (!user) return res.status(400).send("the user with the given id was not found");

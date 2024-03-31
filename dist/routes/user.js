@@ -19,6 +19,7 @@ const sanitize_js_1 = __importDefault(require("../utils/sanitize.js"));
 const userValidator_js_1 = require("../validation/userValidator.js");
 const axios_1 = __importDefault(require("axios"));
 const https_1 = __importDefault(require("https"));
+const jwt_js_1 = require("../utils/jwt.js");
 const axiosInstance = axios_1.default.create({
     baseURL: `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}`,
     httpsAgent: new https_1.default.Agent({
@@ -26,16 +27,6 @@ const axiosInstance = axios_1.default.create({
     }),
     withCredentials: true
 });
-router.get("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const response = yield axiosInstance.get('/check');
-        res.status(200).send(response.data);
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).send({ errorMessage: "Failed to check authentication server" });
-    }
-}));
 router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield axiosInstance.post('/register', req.body);
@@ -69,7 +60,7 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).send({ message: error.response.data.message });
     }
 }));
-router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getAllUsers", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield user_js_1.default.find({});
         res.status(200).send(users);
@@ -79,7 +70,7 @@ router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).send({ message: "something error when trying to get users" });
     }
 }));
-router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/specificUser", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { firstName, lastName } = req.body;
         const user = yield user_js_1.default.findOne({
@@ -93,7 +84,7 @@ router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).send({ message: "error when trying to get user" });
     }
 }));
-router.put("/updateUser/:email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/updateUser/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let email = req.params.email;
         if (typeof email === 'string') {
@@ -112,7 +103,7 @@ router.put("/updateUser/:email", (req, res) => __awaiter(void 0, void 0, void 0,
         res.status(500).send({ errorMessage: "update fail" });
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield user_js_1.default.findByIdAndDelete(req.params.id);
         if (!user)
