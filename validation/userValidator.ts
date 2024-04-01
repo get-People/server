@@ -12,6 +12,6 @@ export const updateUserValidator = Joi.object({
     firstName: Joi.string().min(3).max(30).optional(),
     lastName: Joi.string().min(3).max(30).optional(),
     email: Joi.string().min(15).max(30).email().optional(),
-    password: Joi.alternatives().try(Joi.string().min(4), Joi.number()).optional(),
+    password: Joi.string().min(4).optional(),
     isAdmin: Joi.boolean().optional()
 })

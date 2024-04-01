@@ -16,6 +16,23 @@ const axiosInstance = axios.create({
   withCredentials: true 
 })
 
+router.post("/forgot-password", async (req: Request, res: Response) => {
+  try {
+    console.log("/forgot-password")
+    const mainServerUrl = `https://${process.env.ADDRESS}:${process.env.PORT}/api/users`;
+    req.body.mainServerUrl = mainServerUrl;
+    const response = await axiosInstance.post("/forgot-password", req.body);
+    res.status(200).send(response.data);
+  } catch (err: any) {
+    console.error(err);
+    if (err.response) {
+      res.status(err.response.status).send(err.response.data);
+    } else {
+      res.status(500).send({ errorMessage: "Failed to request password reset" });
+    }
+  }
+});
+
 router.post("/register", async(req:Request, res:Response) => {
   try {
     const response = await axiosInstance.post('/register', req.body);
@@ -47,7 +64,6 @@ router.post("/login", async (req: Request, res: Response) => {
     res.status(500).send({ message:error.response.data.message });
     }
 })
-
 router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Response) => {
   try {
     const users = await User.find({})
@@ -78,19 +94,19 @@ router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) 
     if (typeof email === 'string') {
       email = purify.sanitize(email) 
     }
+    console.log("updateUser")
     const { error } = updateUserValidator.validate(req.body)
     if (error) return res.status(400).send(error.details[0].message)
-    
-    const { isAdmin, ...userData } = req.body; 
+     
     const updatedUser = await User.findOneAndUpdate(
       { email },
-      userData,
+      req.body,
      { new: true }
     )
     if (!updatedUser) return res.status(404).send("something went wrong with the updating");
-    if (typeof isAdmin === 'boolean') {
-      return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
-    }
+    // if (typeof isAdmin === 'boolean') {
+    //   return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
+    // }
     res.status(200).send(updatedUser);
   } catch (error) {
     console.error(error)
@@ -99,11 +115,11 @@ router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) 
 });
 
 
-router.delete("/:id", verifyToken,async (req: Request, res: Response) => {
+router.delete("/:email", verifyToken,async (req: Request, res: Response) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id)
-      if (!user) return res.status(400).send("the user with the given id was not found");
-
+    const email = purify.sanitize(req.params.email)
+    const user = await User.findOneAndDelete({email})
+    if (!user) return res.status(400).send("the user with the given email was not found");
     res.status(200).send("deleting user successfully")
   } catch (error) {
       console.error(error)

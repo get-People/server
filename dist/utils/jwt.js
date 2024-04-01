@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyToken = void 0;
+exports.isAdmin = exports.verifyToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const verifyToken = (req, res, next) => {
     var _a, _b;
@@ -23,3 +23,9 @@ const verifyToken = (req, res, next) => {
     return res.status(401).send({ message: "Unauthorized" });
 };
 exports.verifyToken = verifyToken;
+const isAdmin = (req, res, next) => {
+    if (req.body.user.isAdmin)
+        return next();
+    return res.status(401).send({ message: "forbidden" });
+};
+exports.isAdmin = isAdmin;
