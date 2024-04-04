@@ -16,6 +16,6 @@ exports.updateUserValidator = joi_1.default.object({
     firstName: joi_1.default.string().min(3).max(30).optional(),
     lastName: joi_1.default.string().min(3).max(30).optional(),
     email: joi_1.default.string().min(15).max(30).email().optional(),
-    password: joi_1.default.alternatives().try(joi_1.default.string().min(4), joi_1.default.number()).optional(),
+    password: joi_1.default.string().min(4).optional(),
     isAdmin: joi_1.default.boolean().optional()
 });

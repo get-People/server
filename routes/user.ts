@@ -5,6 +5,7 @@ import purify from "../utils/sanitize.js";
 import {updateUserValidator } from "../validation/userValidator.js";
 import axios from "axios";
 import https from "https"
+import { isAdmin, verifyToken } from "../utils/jwt.js";
 
 
 const axiosInstance = axios.create({
@@ -15,15 +16,20 @@ const axiosInstance = axios.create({
   withCredentials: true 
 })
 
-
-router.get("/check", async (req, res) => {
+router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
-    const response = await axiosInstance.get('/check')
+    console.log("/forgot-password")
+    const mainServerUrl = `https://${process.env.ADDRESS}:${process.env.PORT}/api/users`;
+    req.body.mainServerUrl = mainServerUrl;
+    const response = await axiosInstance.post("/forgot-password", req.body);
     res.status(200).send(response.data);
-  }
-  catch (error) {
-    console.error(error);
-    res.status(500).send({ errorMessage: "Failed to check authentication server" });
+  } catch (err: any) {
+    console.error(err);
+    if (err.response) {
+      res.status(err.response.status).send(err.response.data);
+    } else {
+      res.status(500).send({ errorMessage: "Failed to request password reset" });
+    }
   }
 });
 
@@ -58,8 +64,7 @@ router.post("/login", async (req: Request, res: Response) => {
     res.status(500).send({ message:error.response.data.message });
     }
 })
-
-router.get("/getAllUsers", async (req: Request, res: Response) => {
+router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Response) => {
   try {
     const users = await User.find({})
     res.status(200).send(users)
@@ -68,7 +73,7 @@ router.get("/getAllUsers", async (req: Request, res: Response) => {
     res.status(500).send({message: "something error when trying to get users"})
   }
 });
-router.post("/specificUser", async (req, res) => {
+router.post("/specificUser",verifyToken, async (req, res) => {
   try {
     const { firstName, lastName } = req.body;
     const user = await User.findOne({
@@ -83,19 +88,25 @@ router.post("/specificUser", async (req, res) => {
   }
 })
 
-router.put("/updateUser/:email", async(req: Request, res: Response) => {
+router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) => {
   try {
     let email = req.params.email;
     if (typeof email === 'string') {
-      email = purify.sanitize(email)
+      email = purify.sanitize(email) 
     }
+    console.log("updateUser")
     const { error } = updateUserValidator.validate(req.body)
-    if(error) return res.status(400).send(error.details[0].message) 
+    if (error) return res.status(400).send(error.details[0].message)
+     
     const updatedUser = await User.findOneAndUpdate(
       { email },
       req.body,
+     { new: true }
     )
     if (!updatedUser) return res.status(404).send("something went wrong with the updating");
+    // if (typeof isAdmin === 'boolean') {
+    //   return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
+    // }
     res.status(200).send(updatedUser);
   } catch (error) {
     console.error(error)
@@ -103,11 +114,12 @@ router.put("/updateUser/:email", async(req: Request, res: Response) => {
   }
 });
 
-router.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id)
-      if (!user) return res.status(400).send("the user with the given id was not found");
 
+router.delete("/:email", verifyToken,async (req: Request, res: Response) => {
+  try {
+    const email = purify.sanitize(req.params.email)
+    const user = await User.findOneAndDelete({email})
+    if (!user) return res.status(400).send("the user with the given email was not found");
     res.status(200).send("deleting user successfully")
   } catch (error) {
       console.error(error)

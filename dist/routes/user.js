@@ -19,6 +19,7 @@ const sanitize_js_1 = __importDefault(require("../utils/sanitize.js"));
 const userValidator_js_1 = require("../validation/userValidator.js");
 const axios_1 = __importDefault(require("axios"));
 const https_1 = __importDefault(require("https"));
+const jwt_js_1 = require("../utils/jwt.js");
 const axiosInstance = axios_1.default.create({
     baseURL: `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}`,
     httpsAgent: new https_1.default.Agent({
@@ -26,14 +27,24 @@ const axiosInstance = axios_1.default.create({
     }),
     withCredentials: true
 });
-router.get("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/forgot-password", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const response = yield axiosInstance.get('/check');
+        console.log("/forgot-password");
+        const mainServerUrl = `https://${process.env.ADDRESS}:${process.env.PORT}/api/users`;
+        req.body.mainServerUrl = mainServerUrl;
+        const response = yield axiosInstance.post("/forgot-password", req.body);
         res.status(200).send(response.data);
     }
-    catch (error) {
-        console.error(error);
-        res.status(500).send({ errorMessage: "Failed to check authentication server" });
+    catch (err) {
+        console.error(err);
+        if (err.response) {
+            res.status(err.response.status).send(err.response.data);
+        }
+        else {
+            res
+                .status(500)
+                .send({ errorMessage: "Failed to request password reset" });
+        }
     }
 }));
 router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -69,7 +80,7 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).send({ message: error.response.data.message });
     }
 }));
-router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getAllUsers", jwt_js_1.verifyToken, jwt_js_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield user_js_1.default.find({});
         res.status(200).send(users);
@@ -79,7 +90,7 @@ router.get("/getAllUsers", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).send({ message: "something error when trying to get users" });
     }
 }));
-router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/specificUser", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { firstName, lastName } = req.body;
         const user = yield user_js_1.default.findOne({
@@ -93,18 +104,22 @@ router.post("/specificUser", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(500).send({ message: "error when trying to get user" });
     }
 }));
-router.put("/updateUser/:email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/updateUser/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let email = req.params.email;
         if (typeof email === 'string') {
             email = sanitize_js_1.default.sanitize(email);
         }
+        console.log("updateUser");
         const { error } = userValidator_js_1.updateUserValidator.validate(req.body);
         if (error)
             return res.status(400).send(error.details[0].message);
-        const updatedUser = yield user_js_1.default.findOneAndUpdate({ email }, req.body);
+        const updatedUser = yield user_js_1.default.findOneAndUpdate({ email }, req.body, { new: true });
         if (!updatedUser)
             return res.status(404).send("something went wrong with the updating");
+        // if (typeof isAdmin === 'boolean') {
+        //   return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
+        // }
         res.status(200).send(updatedUser);
     }
     catch (error) {
@@ -112,11 +127,12 @@ router.put("/updateUser/:email", (req, res) => __awaiter(void 0, void 0, void 0,
         res.status(500).send({ errorMessage: "update fail" });
     }
 }));
-router.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield user_js_1.default.findByIdAndDelete(req.params.id);
+        const email = sanitize_js_1.default.sanitize(req.params.email);
+        const user = yield user_js_1.default.findOneAndDelete({ email });
         if (!user)
-            return res.status(400).send("the user with the given id was not found");
+            return res.status(400).send("the user with the given email was not found");
         res.status(200).send("deleting user successfully");
     }
     catch (error) {
