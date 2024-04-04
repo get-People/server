@@ -15,16 +15,7 @@ const axiosInstance = axios.create({
       }),
   withCredentials: true 
 })
-router.post("/reset-password/:token", async (req: Request, res: Response) => { 
-  try {
-    const { token } = req.params;
-    const response = await axiosInstance.post(`/reset-password/${token}`, req.body);
-    res.status(200).send(response.data);
-  }
-  catch (error) {
-    res.status(500).send({errorMessage: "Failed to reset password"})
-  }
-})
+
 router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
     console.log("/forgot-password")
