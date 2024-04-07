@@ -19,7 +19,7 @@ const sanitize_js_1 = __importDefault(require("../utils/sanitize.js"));
 const userValidator_js_1 = require("../validation/userValidator.js");
 const axios_1 = __importDefault(require("axios"));
 const https_1 = __importDefault(require("https"));
-const jwt_js_1 = require("../utils/jwt.js");
+const auth_js_1 = require("../utils/auth.js");
 const axiosInstance = axios_1.default.create({
     baseURL: `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}`,
     httpsAgent: new https_1.default.Agent({
@@ -41,9 +41,7 @@ router.post("/forgot-password", (req, res) => __awaiter(void 0, void 0, void 0, 
             res.status(err.response.status).send(err.response.data);
         }
         else {
-            res
-                .status(500)
-                .send({ errorMessage: "Failed to request password reset" });
+            res.status(500).send({ errorMessage: "Failed to request password reset" });
         }
     }
 }));
@@ -68,7 +66,6 @@ router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, functio
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield axiosInstance.post('/login', req.body);
-        console.log(response);
         const cookieHeader = response.headers['set-cookie'];
         if (cookieHeader) {
             res.set('Set-Cookie', cookieHeader);
@@ -80,7 +77,7 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).send({ message: error.response.data.message });
     }
 }));
-router.get("/getAllUsers", jwt_js_1.verifyToken, jwt_js_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getAllUsers", auth_js_1.verifyToken, auth_js_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield user_js_1.default.find({});
         res.status(200).send(users);
@@ -90,12 +87,11 @@ router.get("/getAllUsers", jwt_js_1.verifyToken, jwt_js_1.isAdmin, (req, res) =>
         res.status(500).send({ message: "something error when trying to get users" });
     }
 }));
-router.post("/specificUser", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/specificUser", auth_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { firstName, lastName } = req.body;
+        const { email } = req.body;
         const user = yield user_js_1.default.findOne({
-            "firstName": firstName,
-            "lastName": lastName
+            "email": email,
         });
         res.status(200).send(user);
     }
@@ -104,7 +100,7 @@ router.post("/specificUser", jwt_js_1.verifyToken, (req, res) => __awaiter(void 
         res.status(500).send({ message: "error when trying to get user" });
     }
 }));
-router.put("/updateUser/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/updateUser/:email", auth_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let email = req.params.email;
         if (typeof email === 'string') {
@@ -127,7 +123,7 @@ router.put("/updateUser/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(v
         res.status(500).send({ errorMessage: "update fail" });
     }
 }));
-router.delete("/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:email", auth_js_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const email = sanitize_js_1.default.sanitize(req.params.email);
         const user = yield user_js_1.default.findOneAndDelete({ email });
@@ -141,3 +137,4 @@ router.delete("/:email", jwt_js_1.verifyToken, (req, res) => __awaiter(void 0, v
     }
 }));
 exports.default = router;
+//# sourceMappingURL=user.js.map

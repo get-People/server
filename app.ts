@@ -3,7 +3,7 @@ import https from "https";
 import cors from "cors";
 import fs from "fs";
 import connectToDatabase from "./utils/databaseConnection.js";
-import user from "./routes/user";
+import user from "./routes/user.js";
 
 const privateKey = fs.readFileSync("./security/privatekey.pem");
 const certificate = fs.readFileSync("./security/certificate.pem");

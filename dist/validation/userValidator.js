@@ -19,3 +19,4 @@ exports.updateUserValidator = joi_1.default.object({
     password: joi_1.default.string().min(4).optional(),
     isAdmin: joi_1.default.boolean().optional()
 });
+//# sourceMappingURL=userValidator.js.map

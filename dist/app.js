@@ -8,7 +8,7 @@ const https_1 = __importDefault(require("https"));
 const cors_1 = __importDefault(require("cors"));
 const fs_1 = __importDefault(require("fs"));
 const databaseConnection_js_1 = __importDefault(require("./utils/databaseConnection.js"));
-const user_1 = __importDefault(require("./routes/user"));
+const user_js_1 = __importDefault(require("./routes/user.js"));
 const privateKey = fs_1.default.readFileSync("./security/privatekey.pem");
 const certificate = fs_1.default.readFileSync("./security/certificate.pem");
 (0, databaseConnection_js_1.default)();
@@ -19,8 +19,9 @@ const credentials = {
 };
 app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
-app.use("/api/users", user_1.default);
+app.use("/api/users", user_js_1.default);
 const server = https_1.default.createServer(credentials, app);
 server.listen(parseInt(process.env.PORT, 10), process.env.ADDRESS, () => {
     console.log(`Server is listening on port - ${process.env.PORT}`);
 });
+//# sourceMappingURL=app.js.map

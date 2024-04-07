@@ -13,3 +13,4 @@ const connectToDatabase = () => {
         .catch((err) => console.error("Error connecting to MongoDB", err));
 };
 exports.default = connectToDatabase;
+//# sourceMappingURL=databaseConnection.js.map

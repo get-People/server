@@ -5,7 +5,7 @@ import purify from "../utils/sanitize.js";
 import {updateUserValidator } from "../validation/userValidator.js";
 import axios from "axios";
 import https from "https"
-import { isAdmin, verifyToken } from "../utils/jwt.js";
+import { isAdmin, verifyToken } from "../utils/auth.js";
 
 
 const axiosInstance = axios.create({
@@ -50,9 +50,8 @@ router.post("/register", async(req:Request, res:Response) => {
   }
 });
 router.post("/login", async (req: Request, res: Response) => {
-  try{
+  try {
     const response = await axiosInstance.post('/login', req.body);
-    console.log(response);
       const cookieHeader = response.headers['set-cookie'];
       if (cookieHeader) {
       res.set('Set-Cookie', cookieHeader);
@@ -75,10 +74,9 @@ router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Respons
 });
 router.post("/specificUser",verifyToken, async (req, res) => {
   try {
-    const { firstName, lastName } = req.body;
+    const { email } = req.body;
     const user = await User.findOne({
-      "firstName": firstName,
-      "lastName": lastName
+      "email": email,
     })
     res.status(200).send(user);
   }

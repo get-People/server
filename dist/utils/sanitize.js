@@ -8,3 +8,4 @@ const dompurify_1 = __importDefault(require("dompurify"));
 const window = new jsdom_1.JSDOM('').window;
 const purify = (0, dompurify_1.default)(window);
 exports.default = purify;
+//# sourceMappingURL=sanitize.js.map
