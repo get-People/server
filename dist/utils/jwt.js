@@ -29,3 +29,4 @@ const isAdmin = (req, res, next) => {
     return res.status(401).send({ message: "forbidden" });
 };
 exports.isAdmin = isAdmin;
+//# sourceMappingURL=jwt.js.map
