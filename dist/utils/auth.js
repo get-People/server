@@ -21,7 +21,6 @@ function extractAccessToken(req) {
     return null;
 }
 const verifyToken = (req, res, next) => {
-    console.log("verify");
     if (req.headers.cookie) {
         const token = extractAccessToken(req);
         if (!token)
@@ -29,7 +28,6 @@ const verifyToken = (req, res, next) => {
         try {
             const decodedToken = jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN);
             req.body.user = decodedToken;
-            console.log(decodedToken);
             return next();
         }
         catch (error) {
@@ -40,8 +38,6 @@ const verifyToken = (req, res, next) => {
 };
 exports.verifyToken = verifyToken;
 const isAdmin = (req, res, next) => {
-    console.log("admin");
-    console.log(req.body.user);
     if (req.body.user.isAdmin)
         return next();
     return res.status(401).send({ message: "forbidden" });

@@ -2,13 +2,12 @@ import express from "express";
 import https from "https";
 import cors from "cors";
 import fs from "fs";
-import connectToDatabase from "./utils/databaseConnection.js";
 import user from "./routes/user.js";
-
+import DB from "./DB/db.js"
 const privateKey = fs.readFileSync("./security/privatekey.pem");
 const certificate = fs.readFileSync("./security/certificate.pem");
 
-connectToDatabase();
+const db = new DB();
 
 const app = express();
 const credentials = {

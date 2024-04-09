@@ -1,12 +1,14 @@
 import { Router , Request , Response } from "express";
 const router = Router();
-import User from '../models/user.js'
 import purify from "../utils/sanitize.js";
 import {updateUserValidator } from "../validation/userValidator.js";
 import axios from "axios";
 import https from "https"
 import { isAdmin, verifyToken } from "../utils/auth.js";
+import DB from "../DB/db.js";
 
+
+const db = new DB();
 
 const axiosInstance = axios.create({
   baseURL: `https://${process.env.AUTH_ADDRESS}:${process.env.AUTH_PORT}`,
@@ -18,7 +20,9 @@ const axiosInstance = axios.create({
 
 router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
-    console.log("/forgot-password")
+    // Object.keys(req.body).forEach(key => {
+    //   req.body[key] = purify.sanitize(req.body[key]);
+    // })
     const mainServerUrl = `https://${process.env.ADDRESS}:${process.env.PORT}/api/users`;
     req.body.mainServerUrl = mainServerUrl;
     const response = await axiosInstance.post("/forgot-password", req.body);
@@ -35,6 +39,9 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 
 router.post("/register", async(req:Request, res:Response) => {
   try {
+     // Object.keys(req.body).forEach(key => {
+    //   req.body[key] = purify.sanitize(req.body[key]);
+    // })
     const response = await axiosInstance.post('/register', req.body);
     const cookieHeader = response.headers['set-cookie'];
       if (cookieHeader) {
@@ -65,7 +72,7 @@ router.post("/login", async (req: Request, res: Response) => {
 })
 router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Response) => {
   try {
-    const users = await User.find({})
+    const users = await db.getAllUsers();
     res.status(200).send(users)
   } catch (error) {
     console.error(error)
@@ -75,9 +82,7 @@ router.get("/getAllUsers",verifyToken,isAdmin, async (req: Request, res: Respons
 router.post("/specificUser",verifyToken, async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({
-      "email": email,
-    })
+    const user = await db.findByEmail(email);
     res.status(200).send(user);
   }
   catch (error) {
@@ -92,15 +97,11 @@ router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) 
     if (typeof email === 'string') {
       email = purify.sanitize(email) 
     }
-    console.log("updateUser")
     const { error } = updateUserValidator.validate(req.body)
     if (error) return res.status(400).send(error.details[0].message)
      
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      req.body,
-     { new: true }
-    )
+    const updatedUser = await db.findAndUpdateByEmail(email, req.body);
+  
     if (!updatedUser) return res.status(404).send("something went wrong with the updating");
     // if (typeof isAdmin === 'boolean') {
     //   return res.status(403).send({message: "you are not allowed to change the isAdmin field"})
@@ -116,7 +117,7 @@ router.put("/updateUser/:email",verifyToken, async(req: Request, res: Response) 
 router.delete("/:email", verifyToken,async (req: Request, res: Response) => {
   try {
     const email = purify.sanitize(req.params.email)
-    const user = await User.findOneAndDelete({email})
+    const user = await db.deleteUser(email)
     if (!user) return res.status(400).send("the user with the given email was not found");
     res.status(200).send("deleting user successfully")
   } catch (error) {
